@@ -1,0 +1,136 @@
+#!/bin/bash
+
+usage="\nCalculate most important statistical information from one or more time-series:\n
+	n, mu, sd, err, t_int, tau_max, t_int_err, err_err\n\n
+	n:\t\tNo. of lines\n
+	mu:\t\tmean\n
+	sd:\t\tstandard deviation\n
+	err:\t\tstandard error\n
+	t_int:\t\tintegrated autocorrelation time\n
+	tau_max:\tstopping time for summation of autocorrelation\n
+	t_int_err:\terror on tau_int\n
+	err_err:\terror on the error\n\n
+	The time series can be provided as a file or piped from STDIN.\n
+	If two files are provided, results are calculated for both and the relative deviation is given.\n\n
+	-e: using only every ...-th line\n
+	-s: summing autocovariance only up to first zero-crossing, default is Ulli Wolff method\n
+	-n: no FFT, calculate covariance time slice by time slice instead\n
+	-f: use ...-th field only\n
+	-d: separate fields by deliminator ..., default is tab\n
+	-p: output with machine precision, default is 5 digits\n
+	-t: number of observables, input has to contain one column of each observable, n replaced by index (0..) of observable\n
+	-y: symmetrise, only if '-t' option is used for correlator type data\n"
+
+scheme=0
+prec=0
+delim='	'
+length=1
+sym=0
+
+while getopts "e:snf:d:pt:yh" opt; do
+	case $opt in
+		e)
+			every=$OPTARG
+			;;
+		s)
+			scheme=$(($scheme + 2))
+			;;
+		n)
+			scheme=$(($scheme + 1))
+			;;
+		f)
+			field=$OPTARG
+			;;
+		d)
+			delim=$OPTARG
+			;;
+		p)
+			prec=1
+			;;
+		t)
+			length=$OPTARG
+			;;
+		y)
+			sym=1
+			;;
+		h)
+			echo -e ${usage}
+			exit
+			;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 1
+			;;
+	esac
+done
+
+summary="summary $scheme $prec $length $sym"
+
+index1="$((OPTIND))"
+index2="$(($index1+1))"
+
+if [ -r "${!index2}" ]; then
+	if [ "$every" ]; then
+		if [ "$field" ]; then
+			result1=`cut -d$"$delim" -f"$field" ${!index1} | awk 'NR % '"$every"' == 1' | $summary`
+			result2=`cut -d$"$delim" -f"$field" ${!index2} | awk 'NR % '"$every"' == 1' | $summary`
+		else
+			result1=`awk 'NR % '"$every"' == 1' ${!index1} | $summary`
+			result2=`awk 'NR % '"$every"' == 1' ${!index2} | $summary`
+		fi
+	else
+		if [ "$field" ]; then
+			result1=`cut -d$"$delim" -f"$field" ${!index1} | $summary`
+			result2=`cut -d$"$delim" -f"$field" ${!index2} | $summary`
+		else
+			result1=`cat ${!index1} | $summary`
+			result2=`cat ${!index2} | $summary`
+		fi
+	fi
+
+	echo "lines	mean		std dev		error	t_int	t_max		t_int_err	err_err	file"
+	echo "$result1	${!index1}"
+	echo "$result2	${!index2}"
+	mean1=`echo "$result1" | cut -f2 | sed 's/e/\*10\^/'`
+	mean2=`echo "$result2" | cut -f2 | sed 's/e/\*10\^/'`
+	err1=`echo "$result1" | cut -f4 | sed 's/e/\*10\^/'`
+	err2=`echo "$result2" | cut -f4 | sed 's/e/\*10\^/'`
+	diff=`bc -l <<< "$mean1"'-('"$mean2"')'`
+	diff=${diff#-}
+	sigma=$(echo "sqrt(${err1}*${err1}+${err2}*${err2})" | bc -l)
+	dev=`bc <<< "scale=2;$diff"'/'"$sigma"`
+	echo "$dev sigma deviation."
+elif [ "${!index1}" ]; then
+	if [ -r "${!index1}" ]; then
+		if [ "$every" ]; then
+			if [ "$field" ]; then
+				cut -d$"$delim" -f"$field" ${!index1} | awk 'NR % '"$every"' == 1' | $summary
+			else
+				awk 'NR % '"$every"' == 1' ${!index1} | $summary
+			fi
+		else
+			if [ "$field" ]; then
+				cut -d$"$delim" -f"$field" ${!index1} | $summary
+			else
+				cat ${!index1} | $summary
+			fi
+		fi
+		#if [ "$input" ]; then echo $input | $summary; fi
+	else
+		echo "The file ${!index1} does not exist or is not readable."
+	fi
+else
+	if [ "$every" ]; then
+		if [ "$field" ]; then
+			cat | cut -d$"$delim" -f"$field" | awk 'NR % '"$every"' == 1' | $summary
+		else
+			cat | awk 'NR % '"$every"' == 1' | $summary
+		fi
+	else
+		if [ "$field" ]; then
+			cat | cut -d$"$delim" -f"$field" | $summary
+		else
+			cat | $summary
+		fi
+	fi
+fi
