@@ -18,7 +18,7 @@ make
 ```
 to create the executable. The tool is now ready to be used. It is recommended, however, to copy the two files `comp-avg` and `summary` into a directory that is part of your environment `$PATH`, e.g. `~/bin/`.
 
-The default code depends on `FFTW3`. If you do not have `FFTW3` installed and cannot install it easily, you compile with
+The default code depends on `FFTW3`. If you do not have `FFTW3` installed and cannot install it easily, compile with
 ```
 make MYFFT=-DSTANDALONE
 ```
@@ -68,7 +68,7 @@ U. Wolff, “Monte Carlo errors with less errors”, [Computer Physics Communica
 
 ## Stable Releases
 
-`v2.1.1` first version made publicly available with reasonably comprehensive documentation.
+`v2.1.1` first version made publicly available with reasonably comprehensive documentation.\
 
 ## Help Message
 
