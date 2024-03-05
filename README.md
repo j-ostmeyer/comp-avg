@@ -39,10 +39,13 @@ echo {1..1000} | comp-avg -v
 # lines   mean    std. dev    error      t_int      t_max    t_int_err    err_err
 # 1000    500.5   288.819     130.657    102.427    115      36.8677      23.5144
 ```
-2. Analyse a single file
+2. Analyse a single file (e.g. containing three columns)
 ```
-comp-avg foo.txt
-# 300     -0.0349672      0.98703 0.0624074       0.601662        2       0.0965079       0.00500514
+comp-avg -vt3 foo.txt
+# index   mean          std. dev    error        t_int       t_max    t_int_err    err_err
+# 0       -0.0586172    1.01318     0.0840894    0.347892    1        0.0758117    0.00916228
+# 1       -0.104779     1.01967     0.10424      0.527818    1        0.117064     0.0115596
+# 2       0.0584949     0.928331    0.092652     0.503082    1        0.110622     0.0101865
 ```
 3. Compare two files (e.g. the second columns of both)
 ```
@@ -68,7 +71,7 @@ U. Wolff, “Monte Carlo errors with less errors”, [Computer Physics Communica
 
 ## Stable Releases
 
-`v2.1.1` first version made publicly available with reasonably comprehensive documentation.\
+`v2.1.1` first version made publicly available with reasonably comprehensive documentation.
 
 ## Help Message
 
