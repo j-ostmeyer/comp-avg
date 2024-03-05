@@ -31,7 +31,7 @@ A detailed description of the options and results is displayed on:
 comp-avg -h
 ```
 
-There are three ways in which `comp-avg` can be used.
+There are three ways in which `comp-avg` can be used. In all cases it accepts any number of numeric values (scientific notation is supported) separated by arbitrary white space characters (unless otherwise specified with the `-d` option). In a file with several columns you can select one of them using `-f`. See included `foo.txt` and `bar.txt` for examples.
 
 1. Pipe the time series into `comp-avg`, e.g.
 ```
@@ -41,9 +41,9 @@ echo {1..1000} | comp-avg
 ```
 comp-avg foo.txt
 ```
-3. Compare two files
+3. Compare two files (e.g. the second columns of both)
 ```
-comp-avg foo.txt bar.txt
+comp-avg -f2 foo.txt bar.txt
 ```
 
 ### Why an FFT?
