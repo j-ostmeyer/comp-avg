@@ -35,8 +35,9 @@ There are three ways in which `comp-avg` can be used. In all cases it accepts an
 
 1. Pipe the time series into `comp-avg`, e.g.
 ```
-echo {1..1000} | comp-avg
-# 1000    500.5   288.819 130.657 102.427 115     36.8677 23.5144
+echo {1..1000} | comp-avg -v
+# lines   mean    std. dev    error      t_int      t_max    t_int_err    err_err
+# 1000    500.5   288.819     130.657    102.427    115      36.8677      23.5144
 ```
 2. Analyse a single file
 ```
@@ -45,7 +46,7 @@ comp-avg foo.txt
 ```
 3. Compare two files (e.g. the second columns of both)
 ```
-comp-avg -f2 foo.txt bar.txt
+comp-avg -vf2 foo.txt bar.txt
 # lines   mean         std dev     error        t_int       t_max    t_int_err    err_err       file
 # 100     -0.104779    1.01967     0.10424      0.527818    1        0.117064     0.0115596     foo.txt
 # 200     0.0550419    0.946643    0.0669586    0.502825    1        0.0811432    0.00540271    bar.txt
@@ -67,7 +68,7 @@ U. Wolff, “Monte Carlo errors with less errors”, [Computer Physics Communica
 
 ## Stable Releases
 
-`v2.1.0` first version made publicly available.
+`v2.1.1` first version made publicly available with reasonably comprehensive documentation.
 
 ## Help Message
 
@@ -90,9 +91,10 @@ Calculate most important statistical information from one or more time-series:
  -e: using only every ...-th line
  -s: summing autocovariance only up to first zero-crossing, default is Ulli Wolff method
  -n: no FFT, calculate covariance time slice by time slice instead
- -f: use ...-th field only
- -d: separate fields by deliminator ..., default is tab
+ -f: use ...-th field/column only
+ -d: separate fields by delimiter ..., default is tab
  -p: output with machine precision, default is 5 digits
  -t: number of observables, input has to contain one column of each observable, n replaced by index (0..) of observable
  -y: symmetrise, only if '-t' option is used for correlator type data
+ -v: verbose, display header line
 ```

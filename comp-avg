@@ -15,11 +15,12 @@ usage="\nCalculate most important statistical information from one or more time-
 	-e: using only every ...-th line\n
 	-s: summing autocovariance only up to first zero-crossing, default is Ulli Wolff method\n
 	-n: no FFT, calculate covariance time slice by time slice instead\n
-	-f: use ...-th field only\n
-	-d: separate fields by deliminator ..., default is tab\n
+	-f: use ...-th field/column only\n
+	-d: separate fields by delimiter ..., default is tab\n
 	-p: output with machine precision, default is 5 digits\n
 	-t: number of observables, input has to contain one column of each observable, n replaced by index (0..) of observable\n
-	-y: symmetrise, only if '-t' option is used for correlator type data\n"
+	-y: symmetrise, only if '-t' option is used for correlator type data\n
+	-v: verbose, display header line\n"
 
 scheme=0
 prec=0
@@ -27,7 +28,7 @@ delim='	'
 length=1
 sym=0
 
-while getopts "e:snf:d:pt:yh" opt; do
+while getopts "e:snf:d:pt:yvh" opt; do
 	case $opt in
 		e)
 			every=$OPTARG
@@ -53,6 +54,9 @@ while getopts "e:snf:d:pt:yh" opt; do
 		y)
 			sym=1
 			;;
+		v)
+			verbose=1
+			;;
 		h)
 			echo -e ${usage}
 			exit
@@ -68,6 +72,16 @@ summary="summary $scheme $prec $length $sym"
 
 index1="$((OPTIND))"
 index2="$(($index1+1))"
+
+if [ "$verbose" ]; then
+	if [ -r "${!index2}" ]; then
+		echo "lines	mean	std. dev	error	t_int	t_max	t_int_err	err_err	file"
+	elif [ "$length" -gt "1" ]; then
+		echo "index	mean	std. dev	error	t_int	t_max	t_int_err	err_err"
+	else
+		echo "lines	mean	std. dev	error	t_int	t_max	t_int_err	err_err"
+	fi
+fi
 
 if [ -r "${!index2}" ]; then
 	if [ "$every" ]; then
@@ -88,7 +102,6 @@ if [ -r "${!index2}" ]; then
 		fi
 	fi
 
-	echo "lines	mean		std dev		error	t_int	t_max		t_int_err	err_err	file"
 	echo "$result1	${!index1}"
 	echo "$result2	${!index2}"
 	mean1=`echo "$result1" | cut -f2 | sed 's/e/\*10\^/'`
