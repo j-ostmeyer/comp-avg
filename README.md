@@ -80,7 +80,7 @@ Calculate most important statistical information from one or more time-series:
  sd:            standard deviation
  err:           standard error
  t_int:         integrated autocorrelation time
- t_max:       stopping time for summation of autocorrelation
+ t_max:         stopping time for summation of autocorrelation
  t_int_err:     error on tau_int
  err_err:       error on the error
 

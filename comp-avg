@@ -1,13 +1,13 @@
 #!/bin/bash
 
 usage="\nCalculate most important statistical information from one or more time-series:\n
-	n, mu, sd, err, t_int, tau_max, t_int_err, err_err\n\n
+	n, mu, sd, err, t_int, t_max, t_int_err, err_err\n\n
 	n:\t\tNo. of lines\n
 	mu:\t\tmean\n
 	sd:\t\tstandard deviation\n
 	err:\t\tstandard error\n
 	t_int:\t\tintegrated autocorrelation time\n
-	t_max:\tstopping time for summation of autocorrelation\n
+	t_max:\t\tstopping time for summation of autocorrelation\n
 	t_int_err:\terror on tau_int\n
 	err_err:\terror on the error\n\n
 	The time series can be provided as a file or piped from STDIN.\n
