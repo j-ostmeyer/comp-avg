@@ -47,7 +47,7 @@ comp-avg foo.txt
 3. Compare two files (e.g. the second columns of both)
 ```
 comp-avg -vf2 foo.txt bar.txt
-# lines   mean         std dev     error        t_int       t_max    t_int_err    err_err       file
+# lines   mean         std. dev    error        t_int       t_max    t_int_err    err_err       file
 # 100     -0.104779    1.01967     0.10424      0.527818    1        0.117064     0.0115596     foo.txt
 # 200     0.0550419    0.946643    0.0669586    0.502825    1        0.0811432    0.00540271    bar.txt
 # 1.28 sigma deviation.
