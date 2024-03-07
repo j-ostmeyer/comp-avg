@@ -55,6 +55,7 @@ comp-avg -vf2 foo.txt bar.txt
 # 200     0.0550419    0.946643    0.0669586    0.502825    1        0.0811432    0.00540271    bar.txt
 # 1.28 sigma deviation.
 ```
+Here the relative deviation $\frac{|\mu_1-\mu_2|}{\sqrt{\Delta_1^2+\Delta_2^2}}$ is quoted (with means $\mu_{1,2}$ and errors $\Delta_{1,2}$) assuming both time series are uncorrelated.
 
 ### Why an FFT?
 The autocorrelation function required for a reliable estimate of the error on the average via the integrated autocorrelation time can be estimated time-slice by time-slice (done by `comp-avg -n`). If autocorrelations are long and $O(n)$ time slices are needed, this leads to a runtime in $O(n^2)$. This is where the Fast Fourier Transformation (FFT) comes into play. It allows to calculate the entire autocorrelation function in $O(n \log(n))$ runtime.
