@@ -82,7 +82,9 @@ U. Wolff, “Monte Carlo errors with less errors”, [Computer Physics Communica
 ## Stable Releases
 
 `v2.1.1` first version made publicly available with reasonably comprehensive documentation.
+
 `v2.2.0` introduced option to print the full autocorrelation function.
+
 `v2.2.1` introduced option to add the true mean.
 
 ## Help Message
