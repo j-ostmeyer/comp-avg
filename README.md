@@ -31,7 +31,7 @@ A detailed description of the options and results is displayed on (see last sect
 comp-avg -h
 ```
 
-There are three ways in which `comp-avg` can be used. In all cases it accepts any number of numeric values (scientific notation is supported) separated by arbitrary white space characters (unless otherwise specified with the `-d` option). In a file with several columns you can select one of them using `-f`. See included `foo.txt` and `bar.txt` files containing random numbers for examples.
+There are four ways in which `comp-avg` can be used. In all cases it accepts any number of numeric values (scientific notation is supported) separated by arbitrary white space characters (unless otherwise specified with the `-d` option). In a file with several columns you can select one of them using `-f`. See included `foo.txt` and `bar.txt` files containing random numbers for examples.
 
 1. Pipe the time series into `comp-avg`, e.g.
 ```
@@ -56,6 +56,14 @@ comp-avg -vf2 foo.txt bar.txt
 # 1.28 sigma deviation.
 ```
 Here the relative deviation $\frac{|\mu_1-\mu_2|}{\sqrt{\Delta_1^2+\Delta_2^2}}$ is quoted (with means $\mu_{1,2}$ and errors $\Delta_{1,2}$) assuming both time series are uncorrelated.
+4. Print the full autocorrelation function, e.g.
+```
+echo {1..4} |comp-avg -anm 0
+# 1
+# 0.888889
+# 0.733333
+# 0.533333
+```
 
 ### Why an FFT?
 The autocorrelation function required for a reliable estimate of the error on the average via the integrated autocorrelation time can be estimated time-slice by time-slice (done by `comp-avg -n`). If autocorrelations are long and $O(n)$ time slices are needed, this leads to a runtime in $O(n^2)$. This is where the Fast Fourier Transformation (FFT) comes into play. It allows to calculate the entire autocorrelation function in $O(n \log(n))$ runtime.
@@ -73,6 +81,8 @@ U. Wolff, “Monte Carlo errors with less errors”, [Computer Physics Communica
 ## Stable Releases
 
 `v2.1.1` first version made publicly available with reasonably comprehensive documentation.
+`v2.2.0` introduced option to print the full autocorrelation function.
+`v2.2.1` introduced option to add the true mean.
 
 ## Help Message
 
@@ -100,5 +110,8 @@ Calculate most important statistical information from one or more time-series:
  -p: output with machine precision, default is 5 digits
  -t: number of observables, input has to contain one column of each observable, n replaced by index (0..) of observable
  -y: symmetrise, only if '-t' option is used for correlator type data
+ -a: print full autocorrelation function instead of standard output
+ -m: add true mean ... if known
  -v: verbose, display header line
+ -h: help, this message
 ```
