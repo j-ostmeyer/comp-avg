@@ -476,9 +476,12 @@ int main(int argc, char **argv){
 	}
 
 	if(printfun){
-		if(length > 1) transpose(autocorr, x0, length, n);
+		if(length > 1){
+			transpose(autocorr, x0, length, n);
+			print_mat(x0, n, length, precise_out);
+		}else
+			print_mat(autocorr, n, length, precise_out);
 		free(autocorr);
-		print_mat(x0, n, length, precise_out);
 	}
 
 	free(x0);
