@@ -21,6 +21,7 @@ usage="\nCalculate most important statistical information from one or more time-
 	-t: number of observables, input has to contain one column of each observable, n replaced by index (0..) of observable\n
 	-y: symmetrise, only if '-t' option is used for correlator type data\n
 	-a: print full autocorrelation function instead of standard output\n
+	-m: add true mean ... if known\n
 	-v: verbose, display header line\n
 	-h: help, this message\n"
 
@@ -31,7 +32,7 @@ length=1
 sym=0
 autocorrfun=0
 
-while getopts "e:snf:d:pt:yavh" opt; do
+while getopts "e:snf:d:pt:yam:vh" opt; do
 	case $opt in
 		e)
 			every=$OPTARG
@@ -60,6 +61,9 @@ while getopts "e:snf:d:pt:yavh" opt; do
 		a)
 			autocorrfun=1
 			;;
+		m)
+			truemean=$OPTARG
+			;;
 		v)
 			verbose=1
 			;;
@@ -74,7 +78,7 @@ while getopts "e:snf:d:pt:yavh" opt; do
 	esac
 done
 
-summary="summary $scheme $prec $length $sym $autocorrfun"
+summary="summary $scheme $prec $length $sym $autocorrfun $truemean"
 
 index1="$((OPTIND))"
 index2="$(($index1+1))"

@@ -392,7 +392,7 @@ int main(int argc, char **argv){
 	unsigned i, n;
 	unsigned t_max;
 	double *x, *x0, *autocorr=NULL;
-	double mu, err, std_dev, t_corr;
+	double mu, mu0 = NAN, err, std_dev, t_corr;
 	double t_int_err, err_err;
 	int scheme=0, precise_out=0, length=1, sym=0, printfun=0;
 
@@ -401,7 +401,8 @@ int main(int argc, char **argv){
 	if(argc >= 4) length = atoi(argv[3]);
 	if(argc >= 5) sym = atoi(argv[4]);
 	if(argc >= 6) printfun = atoi(argv[5]);
-	if(argc > 6){
+	if(argc >= 7) mu0 = atof(argv[6]);
+	if(argc > 7){
 		printf("Error: Too many parameters!\n");
 		return 0;
 	}
@@ -436,7 +437,8 @@ int main(int argc, char **argv){
 	if(printfun) autocorr = malloc(n*length*sizeof(double));
 
 	for(unsigned k = 0; k < length; k++, x += n){
-		mu = arith_mittel(x, n);
+		if(isnan(mu0)) mu = arith_mittel(x, n);
+		else mu = mu0;
 
 		if(printfun){
 			switch(scheme){
