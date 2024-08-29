@@ -49,6 +49,24 @@ void transpose_sym(double *x, double *y, unsigned n, unsigned length){
 	}
 }
 
+void normalise(double *autocorr, unsigned n){
+	const double inv_var = 1./autocorr[0];
+	unsigned i;
+	for(i = 0; i < n; i++) autocorr[i] *= inv_var;
+}
+
+void print_mat(double *x, unsigned rows, unsigned cols, int precise_out){
+	unsigned i, k;
+	for(i = 0; i < rows; i++){
+		for(k = 0; k < cols; k++, x++){
+			if(precise_out) printf("%.15g\t", *x);
+			else printf("%g\t", *x);
+		}
+		printf("\n");
+	}
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////
 // Several functions that can be treated as a black box.
 // They are tested and correctly perform needed Fourier trafos.
@@ -186,14 +204,15 @@ double complex *chirp_z_vfft(double *f, double complex *h, double complex *a, do
 // Relevant functions start here
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-double *fast_auto_cov(double *x, double mu, unsigned n){
+double *fast_auto_cov(double *x, double *autocov, double mu, unsigned n){
 	double complex *cov;
 	double complex *ab=NULL, *bft=NULL, *dummy=NULL;
 	double *abs_sq;
 	double a, b, norm;
 	unsigned i, m;
 
-	abs_sq = malloc(n*sizeof(double));
+	if(autocov) abs_sq = autocov;
+	else abs_sq = malloc(n*sizeof(double));
 
 #ifndef STANDALONE
 	const double oneoverN2=1./n/n;
@@ -270,6 +289,11 @@ double local_auto_cov(double *x, double mu, unsigned n, int t){
 	return cov/(n-t);
 }
 
+void global_auto_cov(double *x, double *autocov, double mu, unsigned n){
+	int t;
+	for(t = 0; t < n; t++) autocov[t] = local_auto_cov(x, mu, n, t);
+}
+
 double tau_int_error(double t_int, unsigned n, unsigned t_max){
 	double tau = 0.5*t_int*(1+exp(-2.*t_max/t_int));
 	double error_stat = 2*sqrt((t_max+0.5-t_int)/n);
@@ -324,7 +348,7 @@ double error_auto_weight_naive(double *x, double mu, unsigned n, double *std_dev
 double error_auto_weight_simple(double *x, double mu, unsigned n, double *std_dev, double *t_corr, unsigned *t_max){
 	unsigned i;
 	double cov_int;
-	double *cov=fast_auto_cov(x, mu, n);
+	double *cov=fast_auto_cov(x, NULL, mu, n);
 
 	if(std_dev) *std_dev = sqrt(cov[0]*n/(n-1));
 
@@ -344,7 +368,7 @@ double error_auto_weight(double *x, double mu, unsigned n, double *std_dev, doub
 	unsigned i;
 	double t_int=0.5, t, g=1;
 	double cov_0_inv;
-	double *cov=fast_auto_cov(x, mu, n);
+	double *cov=fast_auto_cov(x, NULL, mu, n);
 
 	cov_0_inv = 1/cov[0];
 	if(std_dev) *std_dev = sqrt(n/(cov_0_inv*(n-1)));
@@ -367,16 +391,17 @@ double error_auto_weight(double *x, double mu, unsigned n, double *std_dev, doub
 int main(int argc, char **argv){
 	unsigned i, n;
 	unsigned t_max;
-	double *x, *x0;
+	double *x, *x0, *autocorr=NULL;
 	double mu, err, std_dev, t_corr;
 	double t_int_err, err_err;
-	int scheme=0, precise_out=0, length=1, sym=0;
+	int scheme=0, precise_out=0, length=1, sym=0, printfun=0;
 
 	if(argc >= 2) scheme = atoi(argv[1]);
 	if(argc >= 3) precise_out = atoi(argv[2]);
 	if(argc >= 4) length = atoi(argv[3]);
 	if(argc >= 5) sym = atoi(argv[4]);
-	if(argc > 5){
+	if(argc >= 6) printfun = atoi(argv[5]);
+	if(argc > 6){
 		printf("Error: Too many parameters!\n");
 		return 0;
 	}
@@ -408,31 +433,52 @@ int main(int argc, char **argv){
 		}else transpose(x0, x, n, length);
 	}
 
+	if(printfun) autocorr = malloc(n*length*sizeof(double));
+
 	for(unsigned k = 0; k < length; k++, x += n){
 		mu = arith_mittel(x, n);
-		// The autocorrelation can be calculated directly up to the needed point (naive) or completely using Fourier trafos (default).
-		// The integrated autocorrelation can be summed to first zero crossing (simple) or using the Ulli Wolff method (default).
-		switch(scheme){
-			case 1:
-				err = error_auto_weight_naive(x, mu, n, &std_dev, &t_corr, &t_max);
-				break;
-			case 2:
-				err = error_auto_weight_simple(x, mu, n, &std_dev, &t_corr, &t_max);
-				break;
-			case 3:
-				err = error_auto_weight_simple_naive(x, mu, n, &std_dev, &t_corr, &t_max);
-				break;
-			default:
-				err = error_auto_weight(x, mu, n, &std_dev, &t_corr, &t_max);
+
+		if(printfun){
+			switch(scheme){
+				case 1:
+				case 3:
+					global_auto_cov(x, autocorr+k*n, mu, n);
+					break;
+				default:
+					fast_auto_cov(x, autocorr+k*n, mu, n);
+			}
+			normalise(autocorr+k*n, n);
+		}else{
+			// The autocorrelation can be calculated directly up to the needed point (naive) or completely using Fourier trafos (default).
+			// The integrated autocorrelation can be summed to first zero crossing (simple) or using the Ulli Wolff method (default).
+			switch(scheme){
+				case 1:
+					err = error_auto_weight_naive(x, mu, n, &std_dev, &t_corr, &t_max);
+					break;
+				case 2:
+					err = error_auto_weight_simple(x, mu, n, &std_dev, &t_corr, &t_max);
+					break;
+				case 3:
+					err = error_auto_weight_simple_naive(x, mu, n, &std_dev, &t_corr, &t_max);
+					break;
+				default:
+					err = error_auto_weight(x, mu, n, &std_dev, &t_corr, &t_max);
+			}
+
+			t_int_err = tau_int_error(t_corr, n, t_max);
+			err_err = error_on_the_error(err, t_corr, t_int_err);
+
+			if(precise_out)
+				printf("%d\t%.15g\t%.15g\t%.15g\t%.15g\t%d\t%.15g\t%.15g\n", length>1?k:n, mu, std_dev, err, t_corr, t_max, t_int_err, err_err);
+			else
+				printf("%d\t%g\t%g\t%g\t%g\t%d\t%g\t%g\n", length>1?k:n, mu, std_dev, err, t_corr, t_max, t_int_err, err_err);
 		}
+	}
 
-		t_int_err = tau_int_error(t_corr, n, t_max);
-		err_err = error_on_the_error(err, t_corr, t_int_err);
-
-		if(precise_out)
-			printf("%d\t%.15g\t%.15g\t%.15g\t%.15g\t%d\t%.15g\t%.15g\n", length>1?k:n, mu, std_dev, err, t_corr, t_max, t_int_err, err_err);
-		else
-			printf("%d\t%g\t%g\t%g\t%g\t%d\t%g\t%g\n", length>1?k:n, mu, std_dev, err, t_corr, t_max, t_int_err, err_err);
+	if(printfun){
+		if(length > 1) transpose(autocorr, x0, length, n);
+		free(autocorr);
+		print_mat(x0, n, length, precise_out);
 	}
 
 	free(x0);
