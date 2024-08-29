@@ -56,6 +56,7 @@ comp-avg -vf2 foo.txt bar.txt
 # 1.28 sigma deviation.
 ```
 Here the relative deviation $\frac{|\mu_1-\mu_2|}{\sqrt{\Delta_1^2+\Delta_2^2}}$ is quoted (with means $\mu_{1,2}$ and errors $\Delta_{1,2}$) assuming both time series are uncorrelated.
+
 4. Print the full autocorrelation function, e.g.
 ```
 echo {1..4} |comp-avg -anm 0
